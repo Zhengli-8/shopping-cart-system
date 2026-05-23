@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shop - Shopping Cart</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Header and navigation area -->
+    <header class="header">
+      <div class="header-content">
+        <div class="logo">
+          <span class="logo-icon">🛍️</span>
+          <span>Shop</span>
+        </div>
+
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            class="search-input"
+            id="searchInput"
+            placeholder="Search products..."
+          />
+          <span class="search-results-count" id="searchResultsCount"></span>
+        </div>
+
+        <nav class="nav-tabs">
+          <button class="nav-tab active" data-view="products">Products</button>
+          <button class="nav-tab" data-view="cart">Cart</button>
+          <button class="nav-tab admin-tab hidden" data-view="admin">
+            Admin
+          </button>
+        </nav>
+
+        <div class="header-actions">
+          <div class="user-menu hidden" id="userMenu">
+            <button class="user-menu-btn" id="userMenuBtn">
+              <span class="user-avatar" id="userAvatar">U</span>
+              <span id="userName">User</span>
+              <span>▼</span>
+            </button>
+            <div class="user-dropdown" id="userDropdown">
+              <div class="user-dropdown-header">
+                <div class="user-dropdown-name" id="dropdownName">User</div>
+                <div class="user-dropdown-email" id="dropdownEmail">
+                  email@example.com
+                </div>
+              </div>
+              <button
+                class="user-dropdown-item admin hidden"
+                id="adminMenuBtn"
+                onclick="switchView('admin')"
+              >
+                <span>⚙️</span>
+                <span>Admin Panel</span>
+              </button>
+              <button class="user-dropdown-item" onclick="showProfileModal()">
+                <span>👤</span>
+                <span>Profile</span>
+              </button>
+              <button class="user-dropdown-item danger" onclick="logout()">
+                <span>🚪</span>
+                <span>Logout</span>
+              </button>
+            </div>
+          </div>
+
+          <button class="auth-btn" id="authBtn" onclick="showAuthModal()">
+            Login
+          </button>
+
+          <button class="cart-btn" id="cartBtn">
+            <span>🛒</span>
+            <span>Cart</span>
+            <span class="cart-badge hidden" id="cartBadge">0</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main page content: product list and cart -->
+    <main class="main">
+      <!-- Products Section -->
+      <section class="products-section" id="productsSection">
+        <div class="section-header">
+          <h1 class="section-title">Featured Products</h1>
+          <div class="category-filter" id="categoryFilter"></div>
+        </div>
+        <div class="products-grid" id="productsGrid">
+          <div class="loading">
+            <div class="spinner"></div>
+            <span>Loading...</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cart Section -->
+      <section class="cart-section hidden" id="cartSection">
+        <div class="cart-header">
+          <h2 class="cart-title">
+            <span>🛒</span>
+            <span>My Cart</span>
+          </h2>
+          <button class="clear-cart-btn" id="clearCartBtn">Clear Cart</button>
+        </div>
+
+        <div id="cartContent">
+          <div class="cart-empty">
+            <div class="cart-empty-icon">🛒</div>
+            <p class="cart-empty-text">Your cart is empty</p>
+            <button class="cart-empty-btn" id="continueShoppingBtn">
+              Continue Shopping
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Admin Section -->
+      <section class="admin-section hidden" id="adminSection">
+        <div class="admin-tabs">
+          <button class="admin-tab active" data-admin-view="users">
+            All Users
+          </button>
+          <button class="admin-tab" data-admin-view="carts">
+            Users' Carts
+          </button>
+        </div>
+
+        <div class="admin-panel">
+          <div class="admin-panel-header">
+            <h3 class="admin-panel-title" id="adminPanelTitle">All Users</h3>
+          </div>
+          <div class="admin-panel-body" id="adminPanelBody">
+            <!-- Dynamic content -->
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Toast notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Auth Modal -->
+    <div class="modal-overlay hidden" id="authModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title" id="authModalTitle">Login</h3>
+          <button class="modal-close" onclick="closeAuthModal()">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="auth-tabs">
+            <button
+              class="auth-tab active"
+              data-auth-tab="login"
+              onclick="switchAuthTab('login')"
+            >
+              Login
+            </button>
+            <button
+              class="auth-tab"
+              data-auth-tab="register"
+              onclick="switchAuthTab('register')"
+            >
+              Register
+            </button>
+          </div>
+
+          <!-- Login Form -->
+          <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+              <label class="form-label">Username / Email</label>
+              <input
+                type="text"
+                class="form-input"
+                id="loginUsername"
+                required
+                placeholder="Enter your username or email"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <input
+                type="password"
+                class="form-input"
+                id="loginPassword"
+                required
+                placeholder="Enter your password"
+              />
+            </div>
+            <div class="form-error hidden" id="loginError"></div>
+            <button type="submit" class="modal-btn" id="loginBtn">Login</button>
+          </form>
+
+          <!-- Register Form -->
+          <form
+            id="registerForm"
+            class="hidden"
+            onsubmit="handleRegister(event)"
+          >
+            <div class="form-group">
+              <label class="form-label">Username</label>
+              <input
+                type="text"
+                class="form-input"
+                id="registerUsername"
+                required
+                placeholder="Choose a username"
+                minlength="3"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input
+                type="email"
+                class="form-input"
+                id="registerEmail"
+                required
+                placeholder="Enter your email"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <input
+                type="password"
+                class="form-input"
+                id="registerPassword"
+                required
+                placeholder="Create a password (min 6 characters)"
+                minlength="6"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm Password</label>
+              <input
+                type="password"
+                class="form-input"
+                id="registerConfirmPassword"
+                required
+                placeholder="Confirm your password"
+              />
+            </div>
+            <div class="form-error hidden" id="registerError"></div>
+            <button type="submit" class="modal-btn" id="registerBtn">
+              Create Account
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal-overlay hidden" id="profileModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">My Profile</h3>
+          <button class="modal-close" onclick="closeProfileModal()">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <input
+              type="text"
+              class="form-input"
+              id="profileUsername"
+              readonly
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" id="profileEmail" readonly />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <input type="text" class="form-input" id="profileRole" readonly />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Member Since</label>
+            <input
+              type="text"
+              class="form-input"
+              id="profileCreatedAt"
+              readonly
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div class="modal-overlay hidden" id="checkoutModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">✅ Order Confirmed!</h3>
+          <button class="modal-close" id="closeCheckoutModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="checkout-success">
+            <div class="checkout-success-icon">🎉</div>
+            <h3>Thank you for your order!</h3>
+            <p>Your items will be delivered soon</p>
+            <div class="total-amount" id="checkoutAmount">$0</div>
+          </div>
+        </div>
+        <button class="modal-btn" id="checkoutCompleteBtn">
+          Continue Shopping
+        </button>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
